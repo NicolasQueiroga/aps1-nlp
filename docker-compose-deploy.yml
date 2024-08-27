@@ -2,6 +2,7 @@ services:
   api:
     build:
       context: .
+    container_name: nicolasmq-api
     restart: always
     volumes:
       - static-data:/vol/web
@@ -12,6 +13,7 @@ services:
 
   db:
     image: postgres:13-alpine
+    container_name: nicolasmq-db
     restart: always
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -25,7 +27,12 @@ services:
   proxy:
     build:
       context: ./proxy
+    container_name: nicolasmq-proxy
     restart: always
+    environment:
+      - LISTEN_PORT=${LISTEN_PORT}
+      - API_HOST=${API_HOST}
+      - API_PORT=${API_PORT}
     ports:
       - 9182:8080
     volumes:
