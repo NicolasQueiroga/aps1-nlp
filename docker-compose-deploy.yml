@@ -27,7 +27,7 @@ services:
       context: ./proxy
     restart: always
     ports:
-      - 8080:8080
+      - 9182:8080
     volumes:
       - static-data:/vol/static
     depends_on:
