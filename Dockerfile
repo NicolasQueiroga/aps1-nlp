@@ -3,6 +3,7 @@ LABEL maintainer="https://github.com/NicolasQueiroga"
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE 1
 
 COPY ./requirements.txt /requirements.txt
 COPY ./api /api
