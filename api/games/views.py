@@ -4,7 +4,7 @@ from time import sleep
 import requests
 from datetime import datetime
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import viewsets
 from .serializers import GameSerializer
@@ -26,6 +26,7 @@ def parse_date(date_str):
 class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self, limit=10):
         queryset = super().get_queryset()
