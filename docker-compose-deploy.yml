@@ -29,10 +29,6 @@ services:
       context: ./proxy
     container_name: nicolasmq-proxy
     restart: always
-    environment:
-      - LISTEN_PORT=${LISTEN_PORT}
-      - API_HOST=${API_HOST}
-      - API_PORT=${API_PORT}
     ports:
       - 9182:8080
     volumes:
