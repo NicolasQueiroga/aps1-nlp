@@ -11,18 +11,6 @@ from .serializers import GameSerializer
 from .models import Game
 
 
-def parse_date(date_str):
-    date_formats = ["%b %d, %Y", "%d %b, %Y"]
-
-    for date_format in date_formats:
-        try:
-            return datetime.strptime(date_str, date_format)
-        except ValueError:
-            continue
-
-    raise ValueError(f"Date format for '{date_str}' not recognized.")
-
-
 class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
@@ -45,6 +33,14 @@ class GameViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=["get"],
+        url_path="games-count",
+    )
+    def games_count(self, request):
+        return Response(Game.objects.count())
+
+    @action(
+        detail=False,
+        methods=["get"],
         permission_classes=[IsAuthenticated],
         url_path="fetch-games",
     )
@@ -62,64 +58,65 @@ class GameViewSet(viewsets.ModelViewSet):
             data = response.json()
             if appid and data is not None:
                 if data[str(appid)]["success"]:
-                    game_data = data[str(appid)]["data"]
-                    if not Game.objects.filter(appid=game_data["steam_appid"]).exists():
-                        try:
-                            raw_description = game_data["detailed_description"].replace(
-                                "<br>", "\n"
-                            )
-                            cleaned_description = re.sub("<.*?>", "", raw_description)
-                            final_description = html.unescape(cleaned_description)
-                            Game.objects.create(
-                                appid=game_data["steam_appid"],
-                                name=game_data["name"],
-                                is_free=game_data["is_free"],
-                                description=final_description,
-                                categories=[
-                                    cat["description"]
-                                    for cat in game_data["categories"]
-                                ],
-                                genres=[
-                                    genre["description"]
-                                    for genre in game_data["genres"]
-                                ],
-                                release_date=parse_date(
-                                    game_data["release_date"]["date"]
-                                ).strftime("%Y-%m-%d"),
-                            )
-                        except Exception as e:
-                            print(e)
+                    print(f"Fetching game with appid: {appid}")
+                    self.game_data = data[str(appid)]["data"]
+                    try:
+                        raw_description = self.game_data[
+                            "detailed_description"
+                        ].replace("<br>", "\n")
+                        cleaned_description = re.sub("<.*?>", "", raw_description)
+
+                        name = self.game_data["name"]
+                        is_free = self.game_data["is_free"]
+                        detailed_description = html.unescape(cleaned_description)
+                        categories = [
+                            cat["description"] for cat in self.game_data["categories"]
+                        ]
+                        genres = [
+                            genre["description"] for genre in self.game_data["genres"]
+                        ]
+                        release_date = self._parse_date(
+                            self.game_data["release_date"]["date"]
+                        ).strftime("%Y-%m-%d")
+
+                        today = datetime.today().date()
+                        date_obj = datetime.strptime(release_date, "%Y-%m-%d").date()
+                        game_age = (today - date_obj).days
+                        game_age_category = "new" if game_age < 365 else "old"
+
+                        content = f"{name} {'free' if is_free else 'paid'} {game_age_category} {' '.join(categories)} {' '.join(genres)} {detailed_description}"
+                    except Exception as e:
+                        print(f"Error extracting game content: {e}")
+                        continue
+
+                    if not Game.objects.filter(appid=appid).exists():
+                        Game.objects.create(
+                            appid=appid,
+                            name=name,
+                            is_free=is_free,
+                            description=detailed_description,
+                            categories=categories,
+                            genres=genres,
+                            content=content,
+                        )
                     else:
-                        try:
-                            raw_description = game_data["detailed_description"].replace(
-                                "<br>", "\n"
-                            )
-                            cleaned_description = re.sub("<.*?>", "", raw_description)
-                            final_description = html.unescape(cleaned_description)
-                            game = Game.objects.get(appid=game_data["steam_appid"])
-                            game.name = game_data["name"]
-                            game.is_free = game_data["is_free"]
-                            game.description = final_description
-                            game.categories = [
-                                cat["description"] for cat in game_data["categories"]
-                            ]
-                            game.genres = [
-                                genre["description"] for genre in game_data["genres"]
-                            ]
-                            game.release_date = parse_date(
-                                game_data["release_date"]["date"]
-                            ).strftime("%Y-%m-%d")
-                            game.save()
-                        except Exception as e:
-                            print(e)
-                    sleep(0.1)
+                        game = Game.objects.get(appid=appid)
+                        game.name = name
+                        game.is_free = is_free
+                        game.description = detailed_description
+                        game.categories = categories
+                        game.genres = genres
+                        game.content = content
+                        game.save()
 
         return Response("Games fetched successfully")
 
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="games-count",
-    )
-    def games_count(self, request):
-        return Response(Game.objects.count())
+    def _parse_date(self, date_str):
+        date_formats = ["%b %d, %Y", "%d %b, %Y"]
+        for date_format in date_formats:
+            try:
+                return datetime.strptime(date_str, date_format)
+            except ValueError:
+                continue
+
+        raise ValueError(f"Date format for '{date_str}' not recognized.")

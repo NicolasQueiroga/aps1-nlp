@@ -9,7 +9,9 @@ class Game(models.Model):
     description = models.TextField()
     categories = ArrayField(models.CharField(max_length=255))
     genres = ArrayField(models.CharField(max_length=255))
-    release_date = models.DateField()
+    content = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.appid} - {self.name}"

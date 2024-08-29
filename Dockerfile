@@ -15,7 +15,7 @@ EXPOSE 8000
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk update && \
-    apk add gcc libc-dev make git libffi-dev openssl-dev python3-dev libxml2-dev libxslt-dev && \
+    apk add libgfortran gcc libc-dev make git libffi-dev openssl-dev python3-dev libxml2-dev libxslt-dev && \
     apk add --update --no-cache postgresql-client && \
     apk add --update --no-cache --virtual .tmp-deps \
     build-base postgresql-dev musl-dev linux-headers openblas-dev && \
