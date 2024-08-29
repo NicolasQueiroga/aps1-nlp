@@ -97,6 +97,7 @@ class GameViewSet(viewsets.ModelViewSet):
                             description=detailed_description,
                             categories=categories,
                             genres=genres,
+                            released_at=release_date,
                             content=content,
                         )
                     else:
@@ -106,6 +107,7 @@ class GameViewSet(viewsets.ModelViewSet):
                         game.description = detailed_description
                         game.categories = categories
                         game.genres = genres
+                        game.released_at = release_date
                         game.content = content
                         game.save()
 

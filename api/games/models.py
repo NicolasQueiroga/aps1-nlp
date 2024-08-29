@@ -10,6 +10,7 @@ class Game(models.Model):
     categories = ArrayField(models.CharField(max_length=255))
     genres = ArrayField(models.CharField(max_length=255))
     content = models.TextField()
+    released_at = models.DateField()
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

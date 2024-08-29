@@ -7,7 +7,6 @@ from .nlp.tf_idf import TFIDF
 
 @api_view(["GET"])
 def query(request):
-    game_ids = []
     query = request.query_params.get("query")
     nlp_model = request.query_params.get("model")
 
@@ -17,13 +16,20 @@ def query(request):
         corpus = [(game.appid, game.content) for game in games]
         tfidf = TFIDF(corpus)
         tfidf.fit_transform()
-        game_ids, similarities = zip(*tfidf.get_similar_games(query, threshold=0.1))
+        appid_list, similarity_list = zip(
+            *tfidf.get_similar_games(query, threshold=0.10)
+        )
+        similarity_map = dict(zip(appid_list, similarity_list))
+        queryset = Game.objects.filter(appid__in=similarity_map.keys())
 
-    queryset = Game.objects.filter(appid__in=game_ids)
-    serializer = GameSerializer(queryset, many=True)
-    for game in queryset:
-        serializer.data[game.appid]["similarity"] = similarities[
-            game_ids.index(game.appid)
-        ]
+        sorted_games = sorted(
+            queryset, key=lambda game: similarity_map.get(game.appid, 0.0), reverse=True
+        )
 
-    return Response(serializer.data)
+        serializer = GameSerializer(
+            sorted_games, many=True, context={"similarity_map": similarity_map}
+        )
+
+        return Response(serializer.data)
+
+    return Response([])

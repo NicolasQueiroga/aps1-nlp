@@ -22,6 +22,5 @@ class TFIDF:
         for i, sim in enumerate(cosine_sim[0]):
             if sim > threshold:
                 games.append((self.ids[i], sim))
-        games = sorted(games, key=lambda x: x[1], reverse=True)
 
         return games if games else [(None, None)]
