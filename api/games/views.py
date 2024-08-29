@@ -109,6 +109,8 @@ class GameViewSet(viewsets.ModelViewSet):
                         game.content = content
                         game.save()
 
+                    sleep(0.1)
+
         return Response("Games fetched successfully")
 
     def _parse_date(self, date_str):

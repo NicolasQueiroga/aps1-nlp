@@ -4,23 +4,24 @@ import numpy as np
 
 
 class TFIDF:
-    def __init__(self):
+    def __init__(self, corpus):
         self.vectorizer = TfidfVectorizer()
         self.tfidf_matrix = None
+        self.ids, self.documents = zip(*corpus)
 
-    def fit_transform(self, documents):
-        self.tfidf_matrix = self.vectorizer.fit_transform(documents).toarray().tolist()
+    def fit_transform(self):
+        self.tfidf_matrix = (
+            self.vectorizer.fit_transform(self.documents).toarray().tolist()
+        )
 
     def get_similar_games(self, query, threshold=0.0):
         query_vector = self.vectorizer.transform([query])
         cosine_sim = cosine_similarity(query_vector, self.tfidf_matrix)
-        indices = cosine_sim[0].argsort()[-1::-1]
 
         games = []
-        for index in indices:
-            if cosine_sim[0][index] > threshold:
-                games.append(index)
-            else:
-                break
+        for i, sim in enumerate(cosine_sim[0]):
+            if sim > threshold:
+                games.append((self.ids[i], sim))
+        games = sorted(games, key=lambda x: x[1], reverse=True)
 
-        return games
+        return games if games else [(None, None)]

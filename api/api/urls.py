@@ -6,7 +6,7 @@ from django.conf import settings
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("games/", include("games.urls")),
-    path("nlp/", include("nlp.urls")),
+    path("query", include("nlp.urls")),
 ]
 
 if settings.DEBUG:
