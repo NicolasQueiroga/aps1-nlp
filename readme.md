@@ -18,6 +18,10 @@ This project is a Django-based API designed for managing and querying game data 
   - [Database Content Creation](#database-content-creation)
     - [How it Works](#how-it-works)
     - [Content used for TF-IDF](#content-used-for-tf-idf)
+  - [Tests](#tests)
+    - [Test that yields 10 results](#test-that-yields-10-results)
+    - [Test that yields less than 10 results](#test-that-yields-less-than-10-results)
+    - [Test that yields something non-obvious](#test-that-yields-something-non-obvious)
 
 ## Project Overview
 
@@ -149,5 +153,39 @@ GET /games/fetch-games/
 ```python
 content = f"{name} {'free' if is_free else 'paid'} {game_age_category} {' '.join(categories)} {' '.join(genres)} {detailed_description}"
 ```
+
+## Tests
+
+### Test that yields 10 results
+
+- http://10.103.0.28:9182/query?query=train%20simulator%20with%20japan%27s%20shinkansen
+
+![Test that yields 10 results](./images/query_ten.jpeg)
+
+
+### Test that yields less than 10 results
+
+- http://10.103.0.28:9182/query?query=i%20need%20to%20play%20a%20fps%20indie%20game
+
+![Test that yields less than 10 results](./images/query_less_than_ten.jpeg)
+
+### Test that yields something non-obvious
+
+- http://10.103.0.28:9182/query?query=train%20simulator%20with%20japan%27s%20shinkansen
+
+The results you provided are good examples of non-obvious matches for the query "train simulator with Japan's Shinkansen" because they both relate to trains and Japan, but they approach the topic from different, less direct angles than a straightforward Shinkansen simulation game might. Here's why they are non-obvious but relevant:
+
+1. **Cities: Skylines - Content Creator Pack: Railroads of Japan**:
+   - **Relevance**: This is not a train simulator per se but a content pack for a city-building game that includes Japanese railroads, stations, and trains. It allows players to add authentic Japanese railroad scenery, including Shinkansen stations and other elements, to their cities.
+   - **Non-Obvious Connection**: The primary game focus is city-building, not train simulation. However, the content pack offers a way to experience Japanese railroads, indirectly touching on the Shinkansen theme by letting players design and interact with elements of Japanese rail systems within the broader scope of city management.
+
+2. **Train Simulator: Tōhoku High Speed & Main Line Route Add-On**:
+   - **Relevance**: This is a direct extension for a train simulation game that includes Japan's Shinkansen, specifically the Tōhoku High Speed Line. It offers a detailed and authentic experience of driving both high-speed Shinkansen and local commuter trains.
+   - **Non-Obvious Connection**: While this add-on is a clear match, it's non-obvious in the sense that it's not a standalone game but an expansion that requires the base Train Simulator game. Users looking for "train simulator with Japan's Shinkansen" might not immediately consider DLCs or expansions, focusing instead on full games.
+
+In both cases, these results show that the search algorithm recognized thematic relevance to Japanese trains and Shinkansen, even though one is a content pack for a city-building game and the other is a route add-on for an existing train simulator. This makes them non-obvious but creatively relevant matches to the query.
+
+
+![Test that yields something non-obvious](./images/query_non_obvious.jpeg)
 
 The content used for the TF-IDF model is the combined string of the game name, price category, age category (new or old, depending on the release date), categories, genres, and detailed description. This content is used to generate the TF-IDF matrix and compute similarity scores for content-based queries.
